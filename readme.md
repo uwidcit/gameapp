@@ -1,8 +1,3 @@
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/uwidcit/flaskmvc)
-<a href="https://render.com/deploy?repo=https://github.com/uwidcit/flaskmvc">
-  <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
-</a>
-
 ![Tests](https://github.com/uwidcit/flaskmvc/actions/workflows/dev.yml/badge.svg)
 
 # Flask MVC Template
@@ -61,15 +56,48 @@ in configuration information via environment tab of your render project's dashbo
 
 # Flask Commands
 
-wsgi.py is a utility script for performing various tasks related to the project. You can use it to import and test any code in the project. 
-You just need create a manager command function, for example:
+wsgi.py provides several CLI commands to interact with the application. Here are the available commands:
+
+## Database Commands
+```bash
+# Initialize the database with sample data
+$ flask init
+```
+
+## Game Listing Commands
+```bash
+# List a game for sale
+$ flask list-game
+
+# View all available game listings
+$ flask get-listings
+
+# Change the availability status of a listing
+$ flask change-availability
+```
+
+## User Management Commands
+```bash
+# Create a new user
+$ flask user create <username> <password>
+# Example: flask user create bob bobpass
+
+# List all users
+$ flask user list [format]
+# format options: string (default) or json
+# Example: flask user list json
+```
+
+### Creating Custom Commands
+
+You can create your own commands by adding them to wsgi.py. Here's an example:
 
 ```python
 # inside wsgi.py
 
 user_cli = AppGroup('user', help='User object commands')
 
-@user_cli.cli.command("create-user")
+@user_cli.command("create")
 @click.argument("username")
 @click.argument("password")
 def create_user_command(username, password):
@@ -80,11 +108,7 @@ app.cli.add_command(user_cli) # add the group to the cli
 
 ```
 
-Then execute the command invoking with flask cli with command name and the relevant parameters
-
-```bash
-$ flask user create bob bobpass
-```
+Then execute the command by invoking the flask CLI with the command name and relevant parameters.
 
 
 # Running the Project

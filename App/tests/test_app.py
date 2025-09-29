@@ -33,9 +33,11 @@ class UserUnitTests(unittest.TestCase):
     
     def test_hashed_password(self):
         password = "mypass"
-        hashed = generate_password_hash(password, method='sha256')
         user = User("bob", password)
+        # Simply verify that the password is hashed (not stored as plaintext)
         assert user.password != password
+        # Verify that the password is properly hashed using scrypt (Werkzeug's default)
+        assert user.password.startswith('scrypt:')
 
     def test_check_password(self):
         password = "mypass"
