@@ -1,25 +1,24 @@
 ![Tests](https://github.com/uwidcit/flaskmvc/actions/workflows/dev.yml/badge.svg)
 
-# Flask MVC Template
-A template for flask applications structured in the Model View Controller pattern [Demo](https://dcit-flaskmvc.herokuapp.com/). [Postman Collection](https://documenter.getpostman.com/view/583570/2s83zcTnEJ)
+# Game App
+A simple game rental cli application.
 
-
-# Dependencies
+## Dependencies
 * Python3/pip3
 * Packages listed in requirements.txt
 
-# Installing Dependencies
+## Installing Dependencies
 ```bash
 $ pip install -r requirements.txt
 ```
 
-# Configuration Management
+## Configuration Management
 
 
 Configuration information such as the database url/port, credentials, API keys etc are to be supplied to the application. However, it is bad practice to stage production information in publicly visible repositories.
 Instead, all config is provided by a config file or via [environment variables](https://linuxize.com/post/how-to-set-and-list-environment-variables-in-linux/).
 
-## In Development
+### In Development
 
 When running the project in a development environment (such as gitpod) the app is configured via default_config.py file in the App folder. By default, the config for development uses a sqlite database.
 
@@ -47,24 +46,24 @@ def load_config():
 ...
 ```
 
-## In Production
+### In Production
 
 When deploying your application to production/staging you must pass
 in configuration information via environment tab of your render project's dashboard.
 
 ![perms](./images/fig1.png)
 
-# Flask Commands
+## Flask Commands
 
 wsgi.py provides several CLI commands to interact with the application. Here are the available commands:
 
-## Database Commands
+### Database Commands
 ```bash
 # Initialize the database with sample data
 $ flask init
 ```
 
-## Game Listing Commands
+### Game Listing Commands
 ```bash
 # List a game for sale
 $ flask list-game
@@ -76,7 +75,7 @@ $ flask get-listings
 $ flask change-availability
 ```
 
-## User Management Commands
+### User Management Commands
 ```bash
 # Create a new user
 $ flask user create <username> <password>
@@ -111,7 +110,7 @@ app.cli.add_command(user_cli) # add the group to the cli
 Then execute the command by invoking the flask CLI with the command name and relevant parameters.
 
 
-# Running the Project
+## Running the Project
 
 _For development run the serve command (what you execute):_
 ```bash
@@ -123,17 +122,17 @@ _For production using gunicorn (what the production server executes):_
 $ gunicorn wsgi:app
 ```
 
-# Deploying
+## Deploying
 You can deploy your version of this app to render by clicking on the "Deploy to Render" link above.
 
-# Initializing the Database
+## Initializing the Database
 When connecting the project to a fresh empty database ensure the appropriate configuration is set then file then run the following command. This must also be executed once when running the app on heroku by opening the heroku console, executing bash and running the command in the dyno.
 
 ```bash
 $ flask init
 ```
 
-# Database Migrations
+## Database Migrations
 If changes to the models are made, the database must be'migrated' so that it can be synced with the new models.
 Then execute following commands using manage.py. More info [here](https://flask-migrate.readthedocs.io/en/latest/)
 
@@ -144,9 +143,9 @@ $ flask db upgrade
 $ flask db --help
 ```
 
-# Testing
+## Testing
 
-## Unit & Integration
+### Unit & Integration
 Unit and Integration tests are created in the App/test. You can then create commands to run them. Look at the unit test command in wsgi.py for example
 
 ```python
@@ -175,7 +174,7 @@ You can run all application tests with the following command
 $ pytest
 ```
 
-## Test Coverage
+### Test Coverage
 
 You can generate a report on your test coverage via the following command
 
@@ -189,9 +188,9 @@ You can also generate a detailed html report in a directory named htmlcov with t
 $ coverage html
 ```
 
-# Troubleshooting
+## Troubleshooting
 
-## Views 404ing
+### Views 404ing
 
 If your newly created views are returning 404 ensure that they are added to the list in main.py.
 
@@ -208,10 +207,6 @@ views = [
 ]
 ```
 
-## Cannot Update Workflow file
+### Database Issues
 
-If you are running into errors in gitpod when updateding your github actions file, ensure your [github permissions](https://gitpod.io/integrations) in gitpod has workflow enabled ![perms](./images/gitperms.png)
-
-## Database Issues
-
-If you are adding models you may need to migrate the database with the commands given in the previous database migration section. Alternateively you can delete you database file.
+If you are adding models you may need to migrate the database with the commands given in the previous database migration section. Alternatively you can delete you database file.
