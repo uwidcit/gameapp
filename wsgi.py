@@ -3,9 +3,9 @@ from flask import Flask
 from flask.cli import with_appcontext, AppGroup
 
 from App.database import db, get_migrate
-from App.models import ( User, Listing, Game)
+from App.models import ( User, Listing, Game, Staff, Customer)
 from App.main import create_app
-from App.controllers import ( create_user, get_all_users_json, get_all_users, initialize )
+from App.controllers import ( create_user, create_staff, create_customer, get_all_users_json, get_all_users, get_staff_json, get_customers_json, get_all_staff, get_all_customers, initialize )
 
 
 # This commands file allow you to create convenient CLI commands for testing controllers
@@ -17,14 +17,19 @@ migrate = get_migrate(app)
 @app.cli.command("init", help="Creates and initializes the database")
 def init():
     initialize()
-    sally = User(username='sally', password='sallypass')
-    rob = User(username='rob', password='robpass')
+    # Create sample users
+    sally = Customer(username='sally', password='sallypass')
+    rob = Customer(username='rob', password='robpass')
+    admin = Staff(username='admin', password='adminpass')
+    
+    # Create sample games
     frogger = Game(title='Frogger')
     gta = Game(title='GTA')
     apex = Game(title='Apex Legends')
-    db.session.add_all([sally, rob, frogger, gta, apex])
+    
+    db.session.add_all([sally, rob, admin, frogger, gta, apex])
     db.session.commit()
-    print("Database initialized!")
+    print("Database initialized with sample users (customers: sally, rob; staff: admin) and games!")
 
 @app.cli.command("list-game", help="lets a user list a game")
 def list_game():
@@ -85,6 +90,20 @@ def create_user_command(username, password):
     create_user(username, password)
     print(f'{username} created!')
 
+@user_cli.command("create-staff", help="Creates a staff user")
+@click.argument("username", default="admin")
+@click.argument("password", default="adminpass")
+def create_staff_command(username, password):
+    create_staff(username, password)
+    print(f'Staff user {username} created!')
+
+@user_cli.command("create-customer", help="Creates a customer user")
+@click.argument("username", default="customer")
+@click.argument("password", default="customerpass")
+def create_customer_command(username, password):
+    create_customer(username, password)
+    print(f'Customer user {username} created!')
+
 # this command will be : flask user create bob bobpass
 
 @user_cli.command("list", help="Lists users in the database")
@@ -94,6 +113,24 @@ def list_user_command(format):
         print(get_all_users())
     else:
         print(get_all_users_json())
+
+@user_cli.command("list-staff", help="Lists staff users in the database")
+@click.argument("format", default="string")
+def list_staff_command(format):
+    if format == 'string':
+        staff = get_all_staff()
+        print(staff)
+    else:
+        print(get_staff_json())
+
+@user_cli.command("list-customers", help="Lists customer users in the database")
+@click.argument("format", default="string")
+def list_customers_command(format):
+    if format == 'string':
+        customers = get_all_customers()
+        print(customers)
+    else:
+        print(get_customers_json())
 
 app.cli.add_command(user_cli) # add the group to the cli
 

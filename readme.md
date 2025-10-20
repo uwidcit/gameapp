@@ -1,7 +1,83 @@
 ![Tests](https://github.com/uwidcit/flaskmvc/actions/workflows/dev.yml/badge.svg)
 
 # Game App
-A simple game rental cli application.
+A simple gamThen execute the command by invoking the flask CLI with the command name and relevant paraThen execute the command by invoking the flask CLI with the command name and relevant parameters.
+
+# API Endpoints
+
+## Authentication Endpoints
+
+### Identify Current User
+
+The identify endpoints return information about the currently authenticated user, including their user type.
+
+#### Web Route
+```bash
+GET /identify
+```
+Requires authentication. Returns an HTML page showing user information.
+
+#### API Route  
+```bash
+GET /api/identify
+```
+Requires authentication. Returns JSON with user details including polymorphic type.
+
+**Example Response:**
+```json
+{
+  "message": "username: admin, id: 4",
+  "user": {
+    "id": 4,
+    "username": "admin", 
+    "user_type": "staff"
+  }
+}
+```
+
+### User Types in Response
+- **staff**: Administrative users with elevated privileges
+- **customer**: Standard users with basic privileges  
+- **user**: Base user type (fallback for compatibility)
+
+# Running the Projectrs.
+
+# Authentication
+
+## Custom login_required Decorator
+
+The application includes a custom `login_required` decorator that extends `jwt_required` to verify if the current user is an instance of a specific class. This provides type-based access control.
+
+### Usage
+
+```python
+from App.controllers import login_required
+from App.models import User
+
+@app.route('/admin-only')
+@login_required(User)
+def admin_route():
+    return jsonify({'message': 'Access granted to User instances only'})
+```
+
+### Features
+
+- **Class-based Authorization**: Verifies that `current_user` is an instance of the specified class
+- **Automatic JWT Validation**: Includes all functionality of `jwt_required`
+- **Custom Error Messages**: Returns meaningful error messages when authorization fails
+- **Type Safety**: Ensures only users of the correct type can access protected routes
+
+### Error Response
+
+When authorization fails, the decorator returns:
+```json
+{
+  "error": "Unauthorized",
+  "message": "User must be an instance of ClassName"
+}
+```
+
+# Running the Projectntal cli application.
 
 ## Dependencies
 * Python3/pip3
@@ -81,10 +157,63 @@ $ flask change-availability
 $ flask user create <username> <password>
 # Example: flask user create bob bobpass
 
+# Create a staff user
+$ flask user create-staff <username> <password>
+# Example: flask user create-staff admin adminpass
+
+# Create a customer user
+$ flask user create-customer <username> <password>
+# Example: flask user create-customer john johnpass
+
 # List all users
 $ flask user list [format]
 # format options: string (default) or json
 # Example: flask user list json
+
+# List staff users only
+$ flask user list-staff [format]
+# Example: flask user list-staff json
+
+# List customer users only
+$ flask user list-customers [format]
+# Example: flask user list-customers json
+```
+
+## Polymorphic User Types
+
+The application supports polymorphic user inheritance with three user types:
+
+- **User**: Base class for all users
+- **Staff**: Administrative users with elevated privileges  
+- **Customer**: Standard users with basic privileges
+
+### Features by User Type
+
+| Feature | User | Staff | Customer |
+|---------|------|-------|----------|
+| Basic authentication | ✅ | ✅ | ✅ |
+| Can manage own listings | ✅ | ✅ | ✅ |
+| Can manage all listings | ❌ | ✅ | ❌ |
+| Can view admin panel | ❌ | ✅ | ❌ |
+| JSON includes user_type | ❌ | ✅ | ✅ |
+
+### Usage with login_required Decorator
+
+```python
+from App.controllers import login_required
+from App.models import Staff, Customer
+
+@app.route('/staff-only')
+@login_required(Staff)
+def staff_only_function():
+    # Only staff members can access this route
+    return "Staff access granted"
+
+@app.route('/customers-only')  
+@login_required(Customer)
+def customer_only_function():
+    # Only customers can access this route
+    return "Customer access granted"
 ```
 
 ### Creating Custom Commands

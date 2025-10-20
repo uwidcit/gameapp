@@ -3,7 +3,7 @@ from App.database import db
 class Listing(db.Model):
     listing_id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'), nullable=False)
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     price = db.Column(db.Float, nullable=False)
     condition = db.Column(db.String(50), nullable=True)
     available = db.Column(db.Boolean, default=True)

@@ -3,9 +3,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from App.main import create_app
 from App.database import db, create_db
-from App.models import User
+from App.models import User, Staff, Customer
 from App.controllers import (
     create_user,
+    create_staff,
+    create_customer,
     get_all_users_json,
     login,
     get_user,
@@ -77,5 +79,84 @@ class UsersIntegrationTests(unittest.TestCase):
         update_user(1, "ronnie")
         user = get_user(1)
         assert user.username == "ronnie"
+
+    def test_login_required_decorator(self):
+        from App.controllers.auth import login_required
+        from App.models import User
+        from flask import Flask, jsonify
+        from flask_jwt_extended import create_access_token, JWTManager
+        
+        # Create a test app for this specific test
+        test_app = Flask(__name__)
+        test_app.config['JWT_SECRET_KEY'] = 'test-secret-key'
+        jwt = JWTManager(test_app)
+        
+        # Create a mock class for testing
+        class AdminUser:
+            pass
+        
+        # Create test route with login_required decorator
+        @test_app.route('/test-admin')
+        @login_required(AdminUser)
+        def test_admin_route():
+            return jsonify({'message': 'Admin access granted'})
+        
+        with test_app.test_client() as client:
+            # Test without authentication should fail
+            response = client.get('/test-admin')
+            assert response.status_code == 401
+
+    def test_identify_route_shows_user_type(self):
+        """Test that the identify route returns user type information"""
+        from App.main import create_app
+        from App.controllers import login
+        
+        app = create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'sqlite:///test.db'})
+        
+        # Create a staff user for testing
+        staff_user = create_staff('teststaff2', 'staffpass')
+        
+        with app.test_client() as client:
+            # Login as staff user
+            login_response = client.post('/api/login', 
+                json={'username': 'teststaff2', 'password': 'staffpass'})
+            assert login_response.status_code == 200
+            
+            # Test identify endpoint
+            identify_response = client.get('/api/identify')
+            assert identify_response.status_code == 200
+            
+            data = identify_response.get_json()
+            assert 'user' in data
+            assert data['user']['username'] == 'teststaff2'
+            assert data['user']['user_type'] == 'staff'
+
+    def test_polymorphic_staff_creation(self):
+        staff = create_staff("teststaff1", "staffpass")
+        assert staff.username == "teststaff1"
+        assert isinstance(staff, Staff)
+        assert staff.user_type == "staff"
+        assert staff.can_manage_listings() == True
+        assert staff.can_view_admin_panel() == True
+
+    def test_polymorphic_customer_creation(self):
+        customer = create_customer("testcustomer1", "customerpass")
+        assert customer.username == "testcustomer1"
+        assert isinstance(customer, Customer)
+        assert customer.user_type == "customer"
+        assert customer.can_manage_listings() == False
+        assert customer.can_view_admin_panel() == False
+
+    def test_polymorphic_json_serialization(self):
+        staff = create_staff("jsonstaff1", "pass123")
+        customer = create_customer("jsoncustomer1", "pass456")
+        
+        staff_json = staff.get_json()
+        customer_json = customer.get_json()
+        
+        assert staff_json['user_type'] == 'staff'
+        assert customer_json['user_type'] == 'customer'
+        assert 'username' in staff_json
+        assert 'username' in customer_json
         
 
