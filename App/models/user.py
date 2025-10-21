@@ -1,7 +1,7 @@
 from werkzeug.security import check_password_hash, generate_password_hash
 from App.database import db
 from .listing import Listing
-
+from .rental import Rental
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -47,28 +47,44 @@ class User(db.Model):
 
 
 class Staff(User):
-    """Staff user with administrative privileges"""
+    staff_id = db.Column(db.String(20), unique=True)
     
     __mapper_args__ = {
         'polymorphic_identity': 'staff'
     }
     
-    def __init__(self, username, password):
+    def __init__(self, username, password, staff_id):
         super().__init__(username, password)
+        self.staff_id = staff_id
+
+    def create_rental(self, customer, listing):
+        
+        if listing.available == False:
+            return None
+        
+        listing.set_availability(False)
+        try:
+            new_rental = Rental(listing_id=listing.listing_id, renter_id=customer.id)
+            db.session.add(listing)
+            db.session.add(new_rental)
+            db.session.commit()
+            return new_rental
+        except Exception as e:
+            db.session.rollback()
+            return None
     
-    def get_json(self):
-        json_data = super().get_json()
-        json_data['user_type'] = 'staff'
-        return json_data
+    def return_rental(self, rental):
+        """Staff can process rental returns"""
+        rental.listing.set_availability(True)
+        rental.return_date = db.func.current_timestamp()
+        db.session.add(rental)
+        db.session.commit()
+        return rental
     
-    def can_manage_listings(self):
-        """Staff can manage all listings"""
-        return True
-    
-    def can_view_admin_panel(self):
-        """Staff can view admin panel"""
-        return True
-    
+    def create_listing(self, owner, game, price, condition):
+        listing = owner.list_game(game, price, condition)
+        return listing
+
     def __repr__(self):
         return f'<Staff {self.id} - {self.username}>'
 

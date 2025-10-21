@@ -5,10 +5,10 @@ from App.main import create_app
 from App.database import db, create_db
 from App.models import User, Staff, Customer
 from App.controllers import (
-    create_user,
+ 
     create_staff,
     create_customer,
-    get_all_users_json,
+
     login,
     get_user,
     get_user_by_username,
@@ -60,19 +60,9 @@ def empty_db():
     db.drop_all()
 
 
-def test_authenticate():
-    user = create_user("bob", "bobpass")
-    assert login("bob", "bobpass") != None
 
 class UsersIntegrationTests(unittest.TestCase):
 
-    def test_create_user(self):
-        user = create_user("rick", "bobpass")
-        assert user.username == "rick"
-
-    def test_get_all_users_json(self):
-        users_json = get_all_users_json()
-        self.assertListEqual([{"id":1, "username":"bob"}, {"id":2, "username":"rick"}], users_json)
 
     # Tests data changes in the database
     def test_update_user(self):

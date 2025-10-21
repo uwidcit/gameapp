@@ -19,3 +19,14 @@ class Listing(db.Model):
 
     def set_availability(self, available):
         self.available = available
+    
+    def get_json(self):
+        return {
+            'listing_id': self.listing_id,
+            'game title': self.game.title,
+            'owner_id': self.owner_id,
+            'owner_username': self.user.username,
+            'price': self.price,
+            'condition': self.condition,
+            'available': self.available
+        }

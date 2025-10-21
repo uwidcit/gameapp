@@ -21,8 +21,7 @@ Page/Action Routes
 @auth_views.route('/identify', methods=['GET'])
 @jwt_required()
 def identify_page():
-    user_type = getattr(current_user, 'user_type', 'user')
-    return render_template('message.html', title="Identify", message=f"You are logged in as {current_user.id} - {current_user.username} (Type: {user_type})")
+    return render_template('message.html', title="Identify", message=f"You are logged in as {current_user.id} - {current_user.username} (Type: {current_user.user_type})")
     
 
 @auth_views.route('/login', methods=['POST'])

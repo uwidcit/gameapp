@@ -5,7 +5,7 @@ from flask.cli import with_appcontext, AppGroup
 from App.database import db, get_migrate
 from App.models import ( User, Listing, Game, Staff, Customer)
 from App.main import create_app
-from App.controllers import ( create_user, create_staff, create_customer, get_all_users_json, get_all_users, get_staff_json, get_customers_json, get_all_staff, get_all_customers, initialize )
+from App.controllers import ( create_staff, create_customer, initialize )
 
 
 # This commands file allow you to create convenient CLI commands for testing controllers
@@ -20,14 +20,20 @@ def init():
     # Create sample users
     sally = Customer(username='sally', password='sallypass')
     rob = Customer(username='rob', password='robpass')
-    admin = Staff(username='admin', password='adminpass')
+    admin = Staff(username='admin', password='adminpass', staff_id='STAFF002')
     
     # Create sample games
     frogger = Game(title='Frogger')
     gta = Game(title='GTA')
     apex = Game(title='Apex Legends')
-    
+
     db.session.add_all([sally, rob, admin, frogger, gta, apex])
+    db.session.commit()
+
+    listing1 = sally.list_game(frogger, 19.99, 'used')
+    listing2 = rob.list_game(gta, 29.99, 'new')
+
+    db.session.add_all([listing1, listing2])
     db.session.commit()
     print("Database initialized with sample users (customers: sally, rob; staff: admin) and games!")
 
@@ -82,13 +88,6 @@ User Commands
 # eg : flask user <command>
 user_cli = AppGroup('user', help='User object commands') 
 
-# Then define the command and any parameters and annotate it with the group (@)
-@user_cli.command("create", help="Creates a user")
-@click.argument("username", default="rob")
-@click.argument("password", default="robpass")
-def create_user_command(username, password):
-    create_user(username, password)
-    print(f'{username} created!')
 
 @user_cli.command("create-staff", help="Creates a staff user")
 @click.argument("username", default="admin")
@@ -105,14 +104,6 @@ def create_customer_command(username, password):
     print(f'Customer user {username} created!')
 
 # this command will be : flask user create bob bobpass
-
-@user_cli.command("list", help="Lists users in the database")
-@click.argument("format", default="string")
-def list_user_command(format):
-    if format == 'string':
-        print(get_all_users())
-    else:
-        print(get_all_users_json())
 
 @user_cli.command("list-staff", help="Lists staff users in the database")
 @click.argument("format", default="string")
